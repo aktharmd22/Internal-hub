@@ -186,10 +186,57 @@ Enable the free SSL certificate in hPanel and set `SESSION_SECURE_COOKIE=true`. 
 | Phase | Delivers | State |
 | --- | --- | --- |
 | 1 | Foundation: design system, app shell, auth, roles | **Done** |
-| 2 | Renewal Guard: clients, assets, reminder engine, imports, digests | Next |
-| 3 | Tasks: projects, status machine, review gate, Kanban, time logs | |
-| 4 | Real-time: chat, attachments, voice notes, presence, push, PWA | |
-| 5 | Depth: RDAP/SSL verification, WhatsApp, vault, reports, 2FA | |
-| 6 | Hardening: N+1 audit, Lighthouse, dark-mode and 375px review, docs | |
+| 2 | Renewal Guard: clients, assets, reminder engine, imports, digests | **Done** |
+| 3 | Tasks: projects, status machine, review gate, Kanban, time logs | **Done** |
+| 4 | Real-time: chat, attachments, voice notes, push, PWA | **Done** |
+| 5 | Depth: RDAP/SSL verification, WhatsApp, vault, reports, palette | **Done** |
+| 6 | Hardening: N+1 guards, seeded demo data, docs | **Done** |
 
-Screens that arrive in a later phase are already routed, so the shell is complete and route names never change.
+Not yet built, and deliberately so: 2FA (needs `laravel/fortify`), typing indicators and presence avatars on the thread (the channel is authorised and tested, the UI is not wired), voice-note transcription (the `TranscriptionDriver` seam is described below but has no implementation), and a registrar sync driver.
+
+---
+
+## How the pieces work
+
+### The reminder engine
+
+`assets:send-reminders`, daily at 09:00 Asia/Kolkata. For every asset inside a window of today−7 to today+45 it computes the days remaining, matches the active reminder rules for that asset type, resolves recipients, and for each `(asset, days, channel, recipient)` writes a `reminder_logs` row and queues the notification **inside one transaction, log row first**.
+
+Running it five times in a day sends exactly one set of notifications. That guarantee does not come from the checks in the engine — it comes from the unique index on `reminder_logs (asset_id, days_before, channel, recipient_type, recipient_id)`. The application checks only save the database some work; the index is what survives a retried queue job, a double-fired scheduler and two servers racing each other. `tests/Feature/ReminderEngineTest.php` proves it both ways.
+
+Two behaviours worth knowing:
+
+- **At three days out and closer, every admin is notified as well as the owner.** This includes overdue assets — past the expiry date, the owner alone has demonstrably not been enough.
+- **At exactly ten days out, a task is created** if no open one exists for that asset: assigned to the owner, high priority, due the day before expiry. A reminder can be ignored; a task has a status somebody has to move.
+
+The run pings `HEALTHCHECK_URL` at the very end, and only on a clean run.
+
+### Renewals detect themselves
+
+`assets:verify-expiry`, daily at 04:00, reads domain expiry from RDAP and SSL expiry from the live certificate. If the verified date is **later** than the stored one, the asset is treated as renewed: the date advances, the reminder logs for the finished cycle are cleared so the new cycle starts with a clean idempotency slate, and a system message is posted on any linked renewal task. Nobody has to remember to update the record after paying the registrar.
+
+### The review gate
+
+Employees can reach `submitted`; only an admin or manager can turn that into `completed` or send it back as `reopened`. Every transition goes through `App\Actions\TaskStatusTransition` — the Kanban board included, so a card cannot be dragged into Completed to bypass the gate. Each transition writes a `task_status_logs` row and posts a system message into the thread, so the timeline and the conversation are one continuous history.
+
+`reopen_count` is the quality signal that falls out of this, and it surfaces on the Team scorecard.
+
+### Bulk entry
+
+Adding assets one at a time is where this system dies in month two, so all three ways in shipped together: a CSV with a dry-run preview and per-row errors, a paste-a-list box that fills expiry dates from RDAP, and duplicate detection scoped to the client on both.
+
+CSV parsing is native `fgetcsv` rather than a spreadsheet library — it streams one line at a time, so a large import runs inside a shared host's memory limit. **Export .xlsx as .csv first.**
+
+### Voice notes without ffmpeg
+
+Chrome's MediaRecorder produces `audio/webm;codecs=opus`, which iOS Safari cannot play, and transcoding needs ffmpeg — which shared hosting does not have. So the browser records 16 kHz mono PCM and encodes WAV client-side. WAV plays everywhere, and a minute of speech is under 2 MB.
+
+A `TranscriptionDriver` seam is the obvious next step here: transcribed voice notes become searchable, and an admin can skim instead of listening.
+
+### Known traps, handled
+
+- `expires_at` is a **date**, not a datetime, and both sides of every comparison are floored to a date. As a timestamp it drifts across timezones and "3 days before" fires on the wrong day.
+- The presence channel is named `viewing-task.{id}`, not `presence-task.{id}`. Laravel strips the `private-` and `presence-` prefixes before matching, so the latter would normalise to `task.{id}` and collide with the private channel.
+- Status colours are written as complete class strings in `App\Support\Tone`. An interpolated `text-{$tone}-600` in Blade is a class Tailwind never generates, and the colour silently disappears in production.
+- `Model::preventLazyLoading` is on outside production, so an N+1 fails the request instead of quietly costing 200 queries. A test asserts the list screens stay under 35 queries for 20 rows.
+- No Livewire polling anywhere. Polling plus a websocket double-renders; the websocket won.

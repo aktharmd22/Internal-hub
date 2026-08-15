@@ -1,105 +1,70 @@
 <?php
 
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\PushSubscriptionController;
+use App\Livewire;
 use App\Support\Permissions;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
 
 Route::middleware(['auth', 'verified', 'active'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+
+    Route::get('dashboard', Livewire\Dashboard::class)->name('dashboard');
     Route::view('more', 'more')->name('more');
     Route::view('profile', 'profile')->name('profile');
 
     Route::post('logout', LogoutController::class)->name('logout');
 
-    /*
-     * Destinations that complete the shell. Each one is replaced by its real
-     * screen in the phase named on the page, and the route name never changes,
-     * so navigation and tests stay stable across phases.
-     */
-    Route::view('tasks', 'placeholder', [
-        'title' => 'Tasks',
-        'icon' => 'list-checks',
-        'headline' => 'Task tracking lands in phase 3',
-        'body' => 'Projects, assignments and the submit-for-review flow are built next.',
-    ])->name('tasks.index');
+    Route::post('push-subscriptions', [PushSubscriptionController::class, 'store']);
+    Route::delete('push-subscriptions', [PushSubscriptionController::class, 'destroy']);
 
-    Route::view('chat', 'placeholder', [
-        'title' => 'Chat',
-        'icon' => 'message-circle',
-        'headline' => 'Task chat lands in phase 4',
-        'body' => 'Every task becomes a thread, with attachments, voice notes and live updates.',
-    ])->name('chat.index');
+    /* ---------------------------------------------------------------- work */
 
-    Route::view('notifications', 'placeholder', [
-        'title' => 'Notifications',
-        'icon' => 'bell',
-        'headline' => 'No notifications yet',
-        'body' => 'Renewal alerts start arriving once assets are added in phase 2.',
-    ])->name('notifications.index');
+    Route::get('tasks', Livewire\Tasks\Index::class)->name('tasks.index');
+    Route::get('tasks/{task}', Livewire\Tasks\Show::class)->name('tasks.show');
+
+    Route::get('chat', Livewire\Chat\Index::class)->name('chat.index');
+    Route::get('notifications', Livewire\Notifications\Index::class)->name('notifications.index');
+
+    /* -------------------------------------------------------------- assets */
 
     Route::middleware('can:'.Permissions::VIEW_ASSETS)->group(function () {
-        Route::view('assets', 'placeholder', [
-            'title' => 'Assets',
-            'icon' => 'globe',
-            'headline' => 'Assets land in phase 2',
-            'body' => 'Domains, hosting, SSL and licences, with the reminder engine behind them.',
-        ])->name('assets.index');
+        Route::get('assets', Livewire\Assets\Index::class)->name('assets.index');
+        Route::get('assets/import', Livewire\Assets\Import::class)->name('assets.import');
+        Route::get('assets/{asset}', Livewire\Assets\Show::class)->name('assets.show');
     });
 
     Route::middleware('can:'.Permissions::VIEW_CLIENTS)->group(function () {
-        Route::view('clients', 'placeholder', [
-            'title' => 'Clients',
-            'icon' => 'building-2',
-            'headline' => 'Clients land in phase 2',
-            'body' => 'Accounts, contacts and everything the agency holds for them.',
-        ])->name('clients.index');
+        Route::get('clients', Livewire\Clients\Index::class)->name('clients.index');
     });
+
+    // An employee reaches a client through a task they are on, so this one is
+    // guarded by the policy rather than a blanket permission.
+    Route::get('clients/{client}', Livewire\Clients\Show::class)->name('clients.show');
 
     Route::middleware('can:'.Permissions::VIEW_PROJECTS)->group(function () {
-        Route::view('projects', 'placeholder', [
-            'title' => 'Projects',
-            'icon' => 'folder-kanban',
-            'headline' => 'Projects land in phase 3',
-            'body' => 'Group client work, track progress and see what is at risk.',
-        ])->name('projects.index');
+        Route::get('projects', Livewire\Projects\Index::class)->name('projects.index');
     });
 
+    Route::get('projects/{project}', Livewire\Projects\Show::class)->name('projects.show');
+
+    /* --------------------------------------------------------------- admin */
+
     Route::middleware('can:'.Permissions::MANAGE_USERS)->group(function () {
-        Route::view('team', 'placeholder', [
-            'title' => 'Team',
-            'icon' => 'users',
-            'headline' => 'Team management lands in phase 5',
-            'body' => 'Accounts, workload and the per-employee scorecard.',
-        ])->name('team.index');
+        Route::get('team', Livewire\Team\Index::class)->name('team.index');
     });
 
     Route::middleware('can:'.Permissions::VIEW_REPORTS)->group(function () {
-        Route::view('reports', 'placeholder', [
-            'title' => 'Reports',
-            'icon' => 'chart-column',
-            'headline' => 'Reports land in phase 5',
-            'body' => 'Renewals by month with cost totals, task throughput and CSV export.',
-        ])->name('reports.index');
+        Route::get('reports', Livewire\Reports\Index::class)->name('reports.index');
     });
 
     Route::middleware('can:'.Permissions::VIEW_CREDENTIALS)->group(function () {
-        Route::view('vault', 'placeholder', [
-            'title' => 'Vault',
-            'icon' => 'key-round',
-            'headline' => 'The credential vault lands in phase 5',
-            'body' => 'Encrypted client credentials with an access log on every read.',
-        ])->name('vault.index');
+        Route::get('vault', Livewire\Vault\Index::class)->name('vault.index');
     });
 
     Route::middleware('can:'.Permissions::MANAGE_SETTINGS)->group(function () {
-        Route::view('settings', 'placeholder', [
-            'title' => 'Settings',
-            'icon' => 'settings',
-            'headline' => 'Settings land in phase 2',
-            'body' => 'Company profile, reminder rules, channel credentials and the healthcheck URL.',
-        ])->name('settings.index');
+        Route::get('settings', Livewire\Settings\Index::class)->name('settings.index');
     });
 
     // The design system reference. Never routed in production.

@@ -1,7 +1,10 @@
 @import '@fontsource-variable/dm-sans/wght.css';
 @import 'tailwindcss';
 
-@source '../../app/Livewire';
+/* PHP is scanned too: status colours are written as complete class strings in
+   App\Support\Tone, because an interpolated `text-{$tone}-600` in Blade is a
+   class Tailwind never generates. */
+@source '../../app';
 @source '../../resources/views';
 
 /* Dark mode is driven by a `.dark` class on <html>. An inline head script sets it

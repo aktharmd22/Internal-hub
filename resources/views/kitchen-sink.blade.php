@@ -1,9 +1,9 @@
 <x-layouts.app title="Kitchen sink">
-    <x-slot:actions>
+    @push('page-actions')
         <div x-data>
             <x-app.theme-toggle compact />
         </div>
-    </x-slot:actions>
+    @endpush
 
     <div class="px-4 lg:px-6 py-4 lg:py-6 flex flex-col gap-4 max-w-3xl">
 

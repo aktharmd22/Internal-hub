@@ -7,14 +7,17 @@ namespace App\Models;
 use App\Enums\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, Notifiable;
+    use HasFactory, HasPushSubscriptions, HasRoles, Notifiable;
 
     /** @var list<string> */
     protected $fillable = [
@@ -44,6 +47,47 @@ class User extends Authenticatable
             'notification_prefs' => 'array',
             'last_seen_at' => 'datetime',
         ];
+    }
+
+    public function assignedTasks(): HasMany
+    {
+        return $this->hasMany(Task::class, 'assigned_to');
+    }
+
+    public function createdTasks(): HasMany
+    {
+        return $this->hasMany(Task::class, 'created_by');
+    }
+
+    public function participatingTasks(): BelongsToMany
+    {
+        return $this->belongsToMany(Task::class, 'task_participants')
+            ->withPivot(['role', 'muted_at'])
+            ->withTimestamps();
+    }
+
+    public function ownedAssets(): HasMany
+    {
+        return $this->hasMany(Asset::class, 'owner_id');
+    }
+
+    public function managedClients(): HasMany
+    {
+        return $this->hasMany(Client::class, 'account_manager_id');
+    }
+
+    public function timeLogs(): HasMany
+    {
+        return $this->hasMany(TaskTimeLog::class);
+    }
+
+    /**
+     * The timer currently running for this user, if any. Starting a new one
+     * stops this first — nobody is on two tasks at the same second.
+     */
+    public function runningTimer(): ?TaskTimeLog
+    {
+        return $this->timeLogs()->whereNull('stopped_at')->latest('started_at')->first();
     }
 
     public function role(): ?Role

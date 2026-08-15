@@ -69,6 +69,99 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
+    /* ------------------------------------------------------- vault clipboard */
+
+    /**
+     * Copies a secret and wipes it from the clipboard after 30 seconds, so a
+     * password does not sit in the paste buffer for the rest of the day.
+     */
+    Alpine.data('clipboardVault', () => ({
+        countdown: 0,
+        timer: null,
+
+        async copy(value) {
+            try {
+                await navigator.clipboard.writeText(value);
+            } catch {
+                Alpine.store('toasts').push({
+                    message: 'This browser blocked clipboard access.',
+                    tone: 'warn',
+                });
+                return;
+            }
+
+            Alpine.store('toasts').push({ message: 'Copied. Clears in 30 seconds.', tone: 'ok' });
+
+            clearInterval(this.timer);
+            this.countdown = 30;
+
+            this.timer = setInterval(async () => {
+                this.countdown--;
+
+                if (this.countdown <= 0) {
+                    clearInterval(this.timer);
+
+                    try {
+                        // Only clear if what we wrote is still there — the user
+                        // may have copied something else in the meantime.
+                        const current = await navigator.clipboard.readText();
+                        if (current === value) await navigator.clipboard.writeText('');
+                    } catch {
+                        /* Read permission is often denied; nothing else to do. */
+                    }
+                }
+            }, 1000);
+        },
+    }));
+
+    /* ------------------------------------------------------ pull to refresh */
+
+    /**
+     * Only engages when the page is already scrolled to the top, so it can
+     * never fight a normal scroll gesture.
+     */
+    Alpine.data('pullToRefresh', (callback) => ({
+        pull: 0,
+        startY: 0,
+        tracking: false,
+        refreshing: false,
+
+        onStart(e) {
+            if (window.scrollY > 0 || this.refreshing) return;
+            this.startY = e.touches[0].clientY;
+            this.tracking = true;
+        },
+
+        onMove(e) {
+            if (!this.tracking) return;
+
+            const delta = e.touches[0].clientY - this.startY;
+
+            // Resistance, so the sheet does not shoot down under the thumb.
+            this.pull = delta > 0 ? Math.min(72, delta * 0.4) : 0;
+        },
+
+        async onEnd() {
+            if (!this.tracking) return;
+            this.tracking = false;
+
+            if (this.pull < 48) {
+                this.pull = 0;
+                return;
+            }
+
+            this.refreshing = true;
+            this.pull = 40;
+
+            try {
+                await callback();
+            } finally {
+                this.refreshing = false;
+                this.pull = 0;
+            }
+        },
+    }));
+
     /* ---------------------------------------------------------- swipe rows */
 
     /**

@@ -15,7 +15,28 @@ return [
     */
 
     'postmark' => [
-        'key' => env('POSTMARK_API_KEY'),
+        'token' => env('POSTMARK_TOKEN'),
+        'key' => env('POSTMARK_TOKEN', env('POSTMARK_API_KEY')),
+        'message_stream_id' => env('POSTMARK_MESSAGE_STREAM_ID', 'outbound'),
+    ],
+
+    /*
+     * A dead-man's-switch ping, hit at the end of every successful scheduled
+     * run. If the host's cron stops firing, nothing inside this application
+     * can tell anyone — only the absence of this ping will.
+     */
+    'healthcheck' => [
+        'url' => env('HEALTHCHECK_URL'),
+    ],
+
+    /*
+     * WhatsApp Cloud API. Blank credentials make the channel a clean no-op,
+     * so WhatsApp stays optional without any conditionals at the call site.
+     */
+    'whatsapp' => [
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'token' => env('WHATSAPP_ACCESS_TOKEN'),
+        'template' => env('WHATSAPP_TEMPLATE_NAME', 'renewal_reminder'),
     ],
 
     'resend' => [

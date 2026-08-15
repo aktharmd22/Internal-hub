@@ -1,10 +1,20 @@
 @php
-    $tabs = \App\Support\Navigation::tabs(auth()->user());
+    $user = auth()->user();
+    $tabs = \App\Support\Navigation::tabs($user);
+
+    $unreadChats = \App\Models\Task::query()
+        ->active()
+        ->visibleTo($user)
+        ->whereHas('messages', fn ($q) => $q
+            ->where('user_id', '!=', $user->id)
+            ->whereDoesntHave('reads', fn ($r) => $r->where('user_id', $user->id)))
+        ->count();
 @endphp
 
 <nav
     class="lg:hidden fixed inset-x-0 bottom-0 z-30 border-t border-ink-100 bg-surface safe-b"
     aria-label="Primary"
+    x-data
 >
     <ul class="flex">
         @foreach ($tabs as $tab)
@@ -15,6 +25,14 @@
                     href="{{ route($tab['route']) }}"
                     wire:navigate
                     @if ($isActive) aria-current="page" @endif
+                    @if ($tab['route'] === 'dashboard')
+                        {{-- Long press opens the command palette: ⌘K has no
+                             equivalent on a phone keyboard. --}}
+                        x-on:touchstart.passive="$el._t = setTimeout(() => $dispatch('open-palette'), 550)"
+                        x-on:touchend.passive="clearTimeout($el._t)"
+                        x-on:touchmove.passive="clearTimeout($el._t)"
+                        x-on:contextmenu.prevent
+                    @endif
                     class="relative flex flex-col items-center justify-center gap-1 min-h-14 px-1 {{ $isActive ? 'text-accent-600' : 'text-ink-400' }}"
                 >
                     @if ($isActive)
@@ -24,7 +42,7 @@
                     <span class="relative">
                         <x-icon :name="$tab['icon']" class="size-[22px]" />
 
-                        @if ($tab['route'] === 'chat.index' && ($unreadChats ?? 0) > 0)
+                        @if ($tab['route'] === 'chat.index' && $unreadChats > 0)
                             <span class="absolute -top-1 -right-1.5 min-w-4 h-4 px-1 grid place-items-center rounded-full bg-danger-600 text-on-solid text-[10px] font-medium tnum">
                                 {{ $unreadChats > 99 ? '99+' : $unreadChats }}
                             </span>

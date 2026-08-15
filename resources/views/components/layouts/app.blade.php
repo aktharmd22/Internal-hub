@@ -15,7 +15,7 @@
         <x-app.sidebar />
 
         <div class="flex min-w-0 flex-1 flex-col">
-            <x-app.topbar :title="$title">{{ $actions ?? '' }}</x-app.topbar>
+            <x-app.topbar :title="$title" />
 
             <main id="main" class="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-10">
                 {{ $slot }}
@@ -24,6 +24,8 @@
     </div>
 
     <x-app.bottom-nav />
+
+    <livewire:command-palette />
 
     @include('partials.toasts')
 </body>
