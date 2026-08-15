@@ -65,7 +65,16 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    /*
+     * Asia/Kolkata, not UTC.
+     *
+     * The Laravel skeleton hardcodes UTC here and ignores APP_TIMEZONE. For
+     * this application that is a real bug rather than a preference: the
+     * reminder run fires at 09:00 IST, which is 03:30 UTC and still the
+     * previous calendar day. Every "days until expiry" would come out one
+     * higher than it should, every morning.
+     */
+    'timezone' => env('APP_TIMEZONE', 'UTC'),
 
     /*
     |--------------------------------------------------------------------------

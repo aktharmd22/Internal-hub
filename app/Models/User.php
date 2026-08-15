@@ -23,6 +23,10 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        // An admin creating an account marks it verified: they vouched for the
+        // address. Without this the new user lands on the verify-email screen
+        // and cannot get past it, because nothing ever sent them a link.
+        'email_verified_at',
         'password',
         'phone',
         'avatar_path',

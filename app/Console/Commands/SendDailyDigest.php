@@ -30,8 +30,15 @@ class SendDailyDigest extends Command
             ->with('roles')
             ->get()
             ->each(function (User $user) use (&$sent) {
-                $dueToday = $this->tasksFor($user)->dueToday()->get();
                 $overdue = $this->tasksFor($user)->overdue()->get();
+
+                // A task due at 17:00, read at 22:10, is overdue — not "due
+                // today". Without this the same task appears twice in one
+                // email, under two headings that contradict each other.
+                $dueToday = $this->tasksFor($user)
+                    ->dueToday()
+                    ->whereIntegerNotInRaw('id', $overdue->modelKeys() ?: [0])
+                    ->get();
 
                 $completedYesterday = $this->tasksFor($user)
                     ->where('status', TaskStatus::Completed)

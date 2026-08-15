@@ -34,7 +34,7 @@ class TaskStatusChanged extends Notification implements ShouldQueue
     {
         $channels = ['database'];
 
-        if (config('broadcasting.default') !== 'null') {
+        if (Channels::broadcastReady()) {
             $channels[] = 'broadcast';
         }
 

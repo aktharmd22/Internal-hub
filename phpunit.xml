@@ -19,6 +19,10 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- The suite runs on the same clock as production. Under UTC, a
+             date-boundary bug in the reminder windows would pass here and
+             fire on the wrong day in Chennai. -->
+        <env name="APP_TIMEZONE" value="Asia/Kolkata"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>

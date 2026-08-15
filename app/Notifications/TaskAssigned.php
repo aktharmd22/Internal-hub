@@ -29,7 +29,7 @@ class TaskAssigned extends Notification implements ShouldQueue
     {
         $channels = ['database', 'mail'];
 
-        if (config('broadcasting.default') !== 'null') {
+        if (Channels::broadcastReady()) {
             $channels[] = 'broadcast';
         }
 

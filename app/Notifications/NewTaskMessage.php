@@ -30,7 +30,7 @@ class NewTaskMessage extends Notification implements ShouldQueue
         // thread people mute.
         $channels = ['database'];
 
-        if (config('broadcasting.default') !== 'null') {
+        if (Channels::broadcastReady()) {
             $channels[] = 'broadcast';
         }
 

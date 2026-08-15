@@ -14,6 +14,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Notifications\AssetExpiring;
 use App\Services\Reminders\ReminderEngine;
+use App\Support\Channels;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Http;
@@ -260,6 +261,43 @@ test('a type-specific rule replaces the global one rather than adding to it', fu
     expect($summary->remindersSent)->toBe(1)
         ->and(ReminderLog::where('channel', 'mail')->count())->toBe(1)
         ->and(ReminderLog::where('channel', 'database')->count())->toBe(0);
+});
+
+/*
+ * BROADCAST_CONNECTION=null parses to PHP null, not the string "null". A naive
+ * comparison reports the channel as ready on a system with no broadcaster, logs
+ * a send that never happened, and the unique index then suppresses the real one
+ * for good once Pusher is switched on.
+ */
+test('broadcasting is unavailable until a driver and its key are both set', function () {
+    config()->set('broadcasting.default', null);
+    expect(Channels::broadcastReady())->toBeFalse();
+
+    config()->set('broadcasting.default', 'null');
+    expect(Channels::broadcastReady())->toBeFalse();
+
+    config()->set('broadcasting.default', 'log');
+    expect(Channels::broadcastReady())->toBeFalse();
+
+    // A driver with no credentials is not a working broadcaster either.
+    config()->set('broadcasting.default', 'pusher');
+    config()->set('broadcasting.connections.pusher.key', null);
+    expect(Channels::broadcastReady())->toBeFalse();
+
+    config()->set('broadcasting.connections.pusher.key', 'a-real-key');
+    expect(Channels::broadcastReady())->toBeTrue();
+});
+
+test('no broadcast reminder is logged when there is no broadcaster', function () {
+    config()->set('broadcasting.default', null);
+
+    ruleFor(10, RecipientScope::Owner, ['mail', 'broadcast']);
+    assetExpiringIn(10, ['owner_id' => $this->owner->id]);
+
+    $this->engine->run();
+
+    expect(ReminderLog::where('channel', 'broadcast')->count())->toBe(0)
+        ->and(ReminderLog::where('channel', 'mail')->count())->toBe(1);
 });
 
 test('channels with no credentials are skipped rather than logged as sent', function () {
