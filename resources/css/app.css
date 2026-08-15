@@ -1,0 +1,266 @@
+@import '@fontsource-variable/dm-sans/wght.css';
+@import 'tailwindcss';
+
+@source '../../app/Livewire';
+@source '../../resources/views';
+
+/* Dark mode is driven by a `.dark` class on <html>. An inline head script sets it
+   from localStorage, falling back to prefers-color-scheme, so both the system
+   preference and the manual toggle land on the same single source of truth. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'DM Sans Variable', ui-sans-serif, system-ui, sans-serif;
+
+    --color-ink-950: #16151a;
+    --color-ink-800: #2f2d35;
+    --color-ink-600: #5c5966;
+    --color-ink-400: #8d8a97;
+    --color-ink-200: #d9d7dd;
+    --color-ink-100: #edecef;
+    --color-ink-50: #f7f6f8;
+
+    --color-accent-600: #4338ca;
+    --color-accent-500: #5b4ee0;
+    --color-accent-50: #eeecfb;
+
+    --color-danger-600: #b4231f;
+    --color-danger-50: #fdeceb;
+    --color-warn-600: #9a5b06;
+    --color-warn-50: #fdf1dd;
+    --color-ok-600: #12694f;
+    --color-ok-50: #e3f4ed;
+
+    /* Surfaces are separate from the ink ramp so cards can sit on the canvas
+       in light mode (white on grey) and above it in dark mode (grey on black). */
+    --color-canvas: #f7f6f8;
+    --color-surface: #ffffff;
+    --color-surface-2: #f2f1f4;
+
+    /* Text drawn on top of a solid accent/danger fill. Flips in dark mode
+       because the fills themselves lighten. */
+    --color-on-solid: #ffffff;
+
+    --radius-card: 12px;
+    --radius-control: 9px;
+
+    /* The only elevation in the system. Modals, dropdowns, bottom sheets. */
+    --shadow-float: 0 1px 2px rgb(0 0 0 / 0.04);
+    --shadow-sheet: 0 -1px 2px rgb(0 0 0 / 0.04);
+}
+
+.dark {
+    --color-ink-950: #f4f3f6;
+    --color-ink-800: #e0dee6;
+    --color-ink-600: #a5a2b0;
+    --color-ink-400: #787585;
+    --color-ink-200: #3b3845;
+    --color-ink-100: #2b2833;
+    --color-ink-50: #211f29;
+
+    --color-accent-600: #9b90ff;
+    --color-accent-500: #8b7ef7;
+    --color-accent-50: #262040;
+
+    --color-danger-600: #ff8b84;
+    --color-danger-50: #3a1a19;
+    --color-warn-600: #f0b352;
+    --color-warn-50: #392810;
+    --color-ok-600: #5ed3a8;
+    --color-ok-50: #10312a;
+
+    --color-canvas: #131218;
+    --color-surface: #1c1a23;
+    --color-surface-2: #262330;
+
+    --color-on-solid: #16151a;
+
+    --shadow-float: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-sheet: 0 -1px 2px rgb(0 0 0 / 0.4);
+}
+
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        background-color: var(--color-canvas);
+        color: var(--color-ink-950);
+        font-family: var(--font-sans);
+        font-weight: 400;
+        font-size: 15px;
+        line-height: 1.5;
+        overscroll-behavior-y: none;
+    }
+
+    /* iOS Safari zooms the viewport when a focused input is under 16px. */
+    input,
+    select,
+    textarea {
+        font-size: 16px;
+    }
+
+    @media (min-width: 768px) {
+        body {
+            font-size: 14px;
+        }
+
+        input,
+        select,
+        textarea {
+            font-size: 14px;
+        }
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-accent-500);
+        outline-offset: 2px;
+        border-radius: 4px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+@layer components {
+    /* Type scale. DM Sans runs wide, so tracking tightens as size grows. */
+    .t-page-title {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.25;
+        letter-spacing: -0.01em;
+    }
+
+    .t-section {
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 1.35;
+    }
+
+    .t-body {
+        font-size: 15px;
+        font-weight: 400;
+        line-height: 1.5;
+    }
+
+    .t-sub {
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.45;
+    }
+
+    .t-meta {
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.4;
+    }
+
+    .t-metric {
+        font-size: 26px;
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    @media (min-width: 768px) {
+        .t-page-title {
+            font-size: 24px;
+            letter-spacing: -0.02em;
+        }
+
+        .t-section {
+            font-size: 17px;
+            letter-spacing: -0.01em;
+        }
+
+        .t-body {
+            font-size: 14px;
+        }
+
+        .t-metric {
+            font-size: 30px;
+        }
+    }
+
+    .tnum {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Every tappable element clears the 44px minimum without needing a wrapper. */
+    .tap {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .no-scrollbar {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .safe-b {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .safe-t {
+        padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    /* Avatar colours are derived from the user id in PHP and handed over as
+       custom properties, because an inline style cannot react to `.dark`. */
+    .avatar-tint {
+        background-color: var(--av-bg);
+        color: var(--av-fg);
+    }
+
+    .dark .avatar-tint {
+        background-color: var(--av-bg-dark);
+        color: var(--av-fg-dark);
+    }
+
+    .skeleton {
+        background-image: linear-gradient(
+            90deg,
+            var(--color-ink-100) 0%,
+            var(--color-ink-200) 50%,
+            var(--color-ink-100) 100%
+        );
+        background-size: 200% 100%;
+        animation: skeleton-sweep 1.4s ease-in-out infinite;
+    }
+
+    @keyframes skeleton-sweep {
+        from {
+            background-position: 200% 0;
+        }
+        to {
+            background-position: -200% 0;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .skeleton {
+            animation: none;
+            background-image: none;
+            background-color: var(--color-ink-100);
+        }
+    }
+}

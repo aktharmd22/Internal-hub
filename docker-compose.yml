@@ -1,0 +1,32 @@
+# Optional local stack. XAMPP works equally well — use whichever you already
+# have running, and point .env at it. Production is Hostinger shared hosting,
+# which runs none of this.
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: rg-mysql
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_DATABASE: renewal_guard
+      MYSQL_ROOT_PASSWORD: ''
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      interval: 10s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: rg-mailpit
+    ports:
+      - '1025:1025' # SMTP  → MAIL_PORT
+      - '8025:8025' # web UI → http://localhost:8025
+
+volumes:
+  mysql-data:

@@ -1,0 +1,25 @@
+{
+  "node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-ext-wght-normal.woff2": {
+    "file": "assets/dm-sans-latin-ext-wght-normal-BOFOeGcA.woff2",
+    "src": "node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2": {
+    "file": "assets/dm-sans-latin-wght-normal-Xz1IZZA0.woff2",
+    "src": "node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-yYXGP24I.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-hwOekfSf.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  }
+}
