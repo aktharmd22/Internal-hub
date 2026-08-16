@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RolesAndPermissionsSeeder::class);
 
         $accounts = [
-            [Role::Admin, 'Aarthi Ramesh', 'admin@renewalguard.test'],
+            [Role::Admin, 'Aarthi Ramesh', 'admin@gnext.com'],
             [Role::Manager, 'Vignesh Kumar', 'manager@renewalguard.test'],
             [Role::Employee, 'Divya Nair', 'employee@renewalguard.test'],
         ];

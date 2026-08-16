@@ -48,7 +48,7 @@ class DemoSeeder extends Seeder
     private function team(): array
     {
         $people = [
-            ['Aarthi Ramesh', 'admin@renewalguard.test', Role::Admin],
+            ['Aarthi Ramesh', 'admin@gnext.com', Role::Admin],
             ['Vignesh Kumar', 'manager@renewalguard.test', Role::Manager],
             ['Divya Nair', 'employee@renewalguard.test', Role::Employee],
             ['Suresh Babu', 'suresh@renewalguard.test', Role::Employee],

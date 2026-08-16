@@ -57,7 +57,7 @@ Password for all three is `password`.
 
 | Role | Email |
 | --- | --- |
-| Admin | `admin@renewalguard.test` |
+| Admin | `admin@gnext.com` |
 | Manager | `manager@renewalguard.test` |
 | Employee | `employee@renewalguard.test` |
 
