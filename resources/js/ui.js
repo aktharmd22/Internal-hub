@@ -10,6 +10,27 @@ const SIDEBAR_KEY = 'rg.sidebar';
 document.addEventListener('alpine:init', () => {
     const Alpine = window.Alpine;
 
+    /**
+     * Normalises the payload of an open-modal / close-modal event.
+     *
+     * The same event arrives in two different shapes depending on who sent it:
+     *
+     *   Alpine  $dispatch('open-modal', 'user-form')  → detail === 'user-form'
+     *   Livewire $this->dispatch('open-modal', 'x')   → detail === ['user-form']
+     *
+     * Livewire wraps every param in an array (livewire.js, dispatchEvent), so a
+     * plain `detail === name` comparison silently fails for anything opened
+     * from PHP — the button fires, the event lands, and nothing happens.
+     */
+    Alpine.magic('modalTarget', () => (event) => {
+        const detail = event?.detail;
+
+        if (Array.isArray(detail)) return detail[0];
+        if (detail && typeof detail === 'object') return detail.name ?? detail.modal;
+
+        return detail;
+    });
+
     /* ---------------------------------------------------------------- toasts */
 
     Alpine.store('toasts', {

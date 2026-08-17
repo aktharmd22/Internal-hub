@@ -17,8 +17,11 @@
 {{-- Bottom sheet on a phone, centred dialog from `sm:` up. --}}
 <div
     x-data="{ show: false, name: @js($name) }"
-    x-on:open-modal.window="if ($event.detail === name) show = true"
-    x-on:close-modal.window="if ($event.detail === name || $event.detail === undefined) show = false"
+    {{-- $modalTarget unwraps the payload. Livewire wraps dispatched params in
+         an array while Alpine passes the bare value, so comparing $event.detail
+         directly works for one sender and silently fails for the other. --}}
+    x-on:open-modal.window="if ($modalTarget($event) === name) show = true"
+    x-on:close-modal.window="if ($modalTarget($event) === name || $event.detail === undefined) show = false"
     x-on:keydown.escape.window="show = false"
     x-show="show"
     x-cloak
