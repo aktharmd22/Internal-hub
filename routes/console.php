@@ -15,21 +15,24 @@ use Illuminate\Support\Facades\Schedule;
 | Driven by a single cron entry on the host:
 |     * * * * * php /path/to/artisan schedule:run
 |
+| Nothing here uses runInBackground(). That relies on proc_open, which shared
+| hosting routinely disables — Hostinger disables exec() and symlink() too. Every
+| command below finishes in seconds, so running them inline costs nothing and
+| removes a dependency that would fail silently at 4am.
+|
 */
 
 Schedule::command('assets:send-reminders')
     ->dailyAt('09:00')
     ->timezone('Asia/Kolkata')
     ->withoutOverlapping(30)
-    ->onOneServer()
-    ->runInBackground();
+    ->onOneServer();
 
 Schedule::command('assets:verify-expiry')
     ->dailyAt('04:00')
     ->timezone('Asia/Kolkata')
     ->withoutOverlapping(60)
-    ->onOneServer()
-    ->runInBackground();
+    ->onOneServer();
 
 Schedule::command('reports:daily-digest')
     ->dailyAt('09:15')
@@ -56,5 +59,13 @@ Schedule::command('queue:monitor-failures')
     ->timezone('Asia/Kolkata')
     ->onOneServer();
 
-Schedule::command('backup:clean')->dailyAt('01:00')->timezone('Asia/Kolkata')->onOneServer();
-Schedule::command('backup:run')->dailyAt('01:30')->timezone('Asia/Kolkata')->onOneServer();
+/*
+ * Backups shell out to mysqldump, which needs proc_open. Hostinger disables
+ * that along with exec() and symlink(), and scheduling a job that cannot run
+ * only produces a nightly failure and a misleading "backups configured" entry
+ * on the settings screen. Scheduled only where it can actually work.
+ */
+if (function_exists('proc_open')) {
+    Schedule::command('backup:clean')->dailyAt('01:00')->timezone('Asia/Kolkata')->onOneServer();
+    Schedule::command('backup:run')->dailyAt('01:30')->timezone('Asia/Kolkata')->onOneServer();
+}
