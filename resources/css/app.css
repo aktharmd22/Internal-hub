@@ -127,6 +127,31 @@
         border-radius: 4px;
     }
 
+    /* Form controls opt out of the generic offset outline. They already have a
+       border, so the outline sat 2px outside it and read as a thick double
+       ring. One tinted border plus a soft halo says the same thing quietly.
+
+       Still clearly visible — a keyboard user has no other way to tell where
+       they are, so this is toned down rather than removed. */
+    input:focus,
+    input:focus-visible,
+    select:focus,
+    select:focus-visible,
+    textarea:focus,
+    textarea:focus-visible {
+        outline: none;
+        border-color: var(--color-accent-500);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-500) 16%, transparent);
+    }
+
+    /* Checkboxes and radios keep a ring, having no border to tint. */
+    input[type='checkbox']:focus-visible,
+    input[type='radio']:focus-visible {
+        outline: 2px solid var(--color-accent-500);
+        outline-offset: 2px;
+        box-shadow: none;
+    }
+
     @media (prefers-reduced-motion: reduce) {
         *,
         *::before,
