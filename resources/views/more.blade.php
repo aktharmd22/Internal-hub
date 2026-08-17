@@ -4,7 +4,7 @@
 @endphp
 
 <x-layouts.app title="More">
-    <div class="px-4 lg:px-6 py-4 lg:py-6 flex flex-col gap-4 max-w-2xl">
+    <div class="px-4 lg:px-6 py-4 lg:py-6 flex flex-col gap-4">
         <x-ui.card :padding="false" :flush="true">
             <x-slot:header>
                 <div class="flex items-center gap-3.5">

@@ -12,6 +12,7 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskMessage;
 use App\Models\User;
+use App\Support\MailSettings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
@@ -41,6 +42,10 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Password::defaults(fn () => Password::min(10)->letters()->numbers());
+
+        // SMTP credentials live in Settings so the person who needs to change
+        // them does not need SSH access to edit .env.
+        MailSettings::apply();
 
         // Reminder logs and activity records store a morph type. Aliasing it
         // keeps class names out of the database, so a namespace change later

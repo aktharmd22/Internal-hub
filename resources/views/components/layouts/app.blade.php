@@ -27,6 +27,9 @@
 
     <livewire:command-palette />
 
+    {{-- One overlay for every image in the app; thumbnails just dispatch to it. --}}
+    <x-ui.lightbox />
+
     @include('partials.toasts')
 </body>
 </html>

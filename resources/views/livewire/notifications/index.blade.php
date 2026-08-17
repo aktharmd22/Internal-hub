@@ -14,7 +14,7 @@
         <x-ui.button variant="ghost" size="sm" wire:click="markAllRead">Mark all read</x-ui.button>
     @endpush
 
-    <div class="px-4 lg:px-6 py-4 flex flex-col gap-4 max-w-2xl">
+    <div class="px-4 lg:px-6 py-4 flex flex-col gap-4">
         <div class="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
             @foreach ([
                 '' => 'Everything',

@@ -7,7 +7,7 @@
         @endpush
     @endcan
 
-    <div class="px-4 lg:px-6 py-4 flex flex-col gap-4 max-w-4xl">
+    <div class="px-4 lg:px-6 py-4 flex flex-col gap-4">
 
         <x-ui.card>
             <div class="flex items-start gap-3.5">

@@ -12,7 +12,7 @@
         </x-ui.button>
     @endpush
 
-    <div class="px-4 lg:px-6 py-4 flex flex-col gap-4 max-w-4xl">
+    <div class="px-4 lg:px-6 py-4 flex flex-col gap-4">
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
             @foreach ([
@@ -28,8 +28,10 @@
             @endforeach
         </div>
 
-        {{-- Renewals by month. A bar chart in CSS: no library ships for one
-             screen, and this stays readable in both themes. --}}
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+
+        {{-- Bar charts in CSS: no library ships for two panels, and this stays
+             readable in both themes. --}}
         <x-ui.card title="Renewals by month" subtitle="Count and cost, so a heavy month is visible before it arrives.">
             <div class="flex items-end gap-1.5 h-40 mt-4">
                 @foreach ($renewals as $month)
@@ -71,6 +73,8 @@
                 <span class="flex items-center gap-1.5 t-meta text-ink-600"><span class="size-2 rounded-full bg-ok-600"></span>Completed</span>
             </div>
         </x-ui.card>
+
+        </div>
 
         <x-ui.card title="Assets by type" :padding="false" :flush="true">
             <table class="w-full text-left">

@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Notifications\AssetExpiring;
 use App\Services\Healthcheck;
 use App\Support\Channels;
+use App\Support\MailSettings;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
@@ -21,6 +22,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 /**
  * The reminder engine.
@@ -53,8 +55,9 @@ class ReminderEngine
 
         $rules = ReminderRule::query()->active()->get();
         $admins = $this->admins();
+        $extras = MailSettings::extraRecipients();
 
-        $this->assetsInWindow($today)->each(function (Asset $asset) use ($today, $rules, $admins, $summary) {
+        $this->assetsInWindow($today)->each(function (Asset $asset) use ($today, $rules, $admins, $extras, $summary) {
             $summary->assetsScanned++;
 
             $days = $asset->daysRemaining($today);
@@ -66,6 +69,15 @@ class ReminderEngine
                 foreach ($this->recipients($asset, $rule, $days, $admins) as $recipient) {
                     foreach (Channels::filter($rule->channels ?? []) as $channel) {
                         $this->deliver($asset, $rule, $recipient, $channel, $days, $summary);
+                    }
+                }
+
+                // Addresses configured in Settings get a copy of every internal
+                // reminder. Not for client-scoped rules: a shared agency inbox
+                // has no business receiving a client's own notice.
+                if ($rule->recipient_scope !== RecipientScope::Client) {
+                    foreach ($extras as $email) {
+                        $this->deliverToAddress($asset, $rule, $email, $days, $summary);
                     }
                 }
             }
@@ -193,6 +205,56 @@ class ReminderEngine
         } catch (\Throwable $e) {
             $summary->fail("asset {$asset->id} / {$channel}: {$e->getMessage()}");
             Log::error('Reminder delivery failed.', ['asset' => $asset->id, 'channel' => $channel, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Delivers to a bare email address from Settings.
+     *
+     * Mail only — there is no user behind the address to hold an in-app
+     * notification or a push subscription. The log row keys on a hash of the
+     * address, so the unique index prevents a duplicate exactly as it does for
+     * a real user.
+     */
+    private function deliverToAddress(Asset $asset, ReminderRule $rule, string $email, int $days, RunSummary $summary): void
+    {
+        if (! in_array('mail', Channels::filter($rule->channels ?? []), true)) {
+            return;
+        }
+
+        try {
+            DB::transaction(function () use ($asset, $rule, $email, $days) {
+                ReminderLog::create([
+                    'asset_id' => $asset->id,
+                    'reminder_rule_id' => $rule->id,
+                    'days_before' => $days,
+                    'channel' => 'mail',
+                    'recipient_type' => 'email',
+                    'recipient_id' => MailSettings::recipientId($email),
+                    'sent_at' => now(),
+                    'status' => 'sent',
+                ]);
+
+                Notification::route('mail', $email)->notify(new AssetExpiring(
+                    asset: $asset,
+                    daysRemaining: $days,
+                    channel: 'mail',
+                    isEscalation: $days <= self::ESCALATE_AT,
+                ));
+            });
+
+            $summary->remindersSent++;
+        } catch (QueryException $e) {
+            if (! $this->isDuplicate($e)) {
+                $summary->fail("asset {$asset->id} / {$email}: {$e->getMessage()}");
+
+                return;
+            }
+
+            $summary->remindersSkipped++;
+        } catch (\Throwable $e) {
+            $summary->fail("asset {$asset->id} / {$email}: {$e->getMessage()}");
+            Log::error('Reminder delivery to a configured address failed.', ['asset' => $asset->id, 'error' => $e->getMessage()]);
         }
     }
 

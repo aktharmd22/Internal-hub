@@ -25,7 +25,7 @@
         @endcan
     @endpush
 
-    <div class="px-4 lg:px-6 py-4 flex flex-col gap-4 max-w-3xl">
+    <div class="px-4 lg:px-6 py-4 flex flex-col gap-4">
 
         {{-- Headline ------------------------------------------------------- --}}
         <x-ui.card>

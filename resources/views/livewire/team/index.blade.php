@@ -5,7 +5,7 @@
         </x-ui.button>
     @endpush
 
-    <div class="px-4 lg:px-6 py-4 flex flex-col gap-4 max-w-4xl">
+    <div class="px-4 lg:px-6 py-4 flex flex-col gap-4">
         <x-ui.card :padding="false" title="The team" subtitle="On-time and reopen rates only mean something next to the volume behind them." :flush="true">
             <div class="divide-y divide-ink-100">
                 @foreach ($people as $row)

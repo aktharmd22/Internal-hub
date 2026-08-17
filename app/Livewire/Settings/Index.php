@@ -7,15 +7,19 @@ namespace App\Livewire\Settings;
 use App\Enums\AssetType;
 use App\Enums\RecipientScope;
 use App\Enums\ReminderChannel;
+use App\Mail\TestMail;
 use App\Models\ReminderRule;
 use App\Models\Setting;
 use App\Services\Healthcheck;
 use App\Support\Brand;
 use App\Support\Channels;
+use App\Support\MailSettings;
 use App\Support\Permissions;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -44,6 +48,25 @@ class Index extends Component
 
     public $logo;
 
+    // Mail
+    public string $mail_host = '';
+
+    public string $mail_port = '587';
+
+    public string $mail_username = '';
+
+    public string $mail_password = '';
+
+    public string $mail_encryption = 'tls';
+
+    public string $mail_from_address = '';
+
+    public string $mail_from_name = '';
+
+    public string $notification_recipients = '';
+
+    public string $test_mail_to = '';
+
     // Reminder rule editor
     public ?int $ruleId = null;
 
@@ -64,6 +87,90 @@ class Index extends Component
         $this->healthcheck_url = (string) Setting::get('healthcheck_url', config('services.healthcheck.url'));
         $this->whatsapp_phone_number_id = (string) Setting::get('whatsapp_phone_number_id', '');
         $this->whatsapp_token = Setting::get('whatsapp_token') ? '••••••••••••' : '';
+
+        $this->mail_host = (string) Setting::get('mail_host', config('mail.mailers.smtp.host'));
+        $this->mail_port = (string) Setting::get('mail_port', config('mail.mailers.smtp.port', 587));
+        $this->mail_username = (string) Setting::get('mail_username', config('mail.mailers.smtp.username'));
+        $this->mail_password = Setting::get('mail_password') ? '••••••••••••' : '';
+        $this->mail_encryption = (string) Setting::get('mail_encryption', 'tls');
+        $this->mail_from_address = (string) Setting::get('mail_from_address', config('mail.from.address'));
+        $this->mail_from_name = (string) Setting::get('mail_from_name', config('mail.from.name'));
+        $this->notification_recipients = (string) Setting::get('notification_recipients', '');
+        $this->test_mail_to = (string) auth()->user()->email;
+    }
+
+    public function saveMail(): void
+    {
+        $data = $this->validate([
+            'mail_host' => ['nullable', 'string', 'max:255'],
+            'mail_port' => ['nullable', 'integer', 'between:1,65535'],
+            'mail_username' => ['nullable', 'string', 'max:255'],
+            'mail_encryption' => ['required', 'in:tls,ssl,none'],
+            'mail_from_address' => ['nullable', 'email', 'max:255'],
+            'mail_from_name' => ['nullable', 'string', 'max:255'],
+            'notification_recipients' => ['nullable', 'string', 'max:2000'],
+        ], attributes: [
+            'mail_host' => 'SMTP server',
+            'mail_from_address' => 'from address',
+            'notification_recipients' => 'recipients',
+        ]);
+
+        // Every address is validated individually, so one typo is named rather
+        // than the whole field being rejected.
+        if (filled($data['notification_recipients'])) {
+            $raw = preg_split('/[,;\r\n]+/', $data['notification_recipients']) ?: [];
+            $bad = collect($raw)
+                ->map(fn ($e) => trim($e))
+                ->filter()
+                ->reject(fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL) !== false);
+
+            if ($bad->isNotEmpty()) {
+                $this->addError('notification_recipients', 'Not a valid email address: '.$bad->implode(', '));
+
+                return;
+            }
+        }
+
+        foreach (['mail_host', 'mail_port', 'mail_username', 'mail_encryption', 'mail_from_address', 'mail_from_name'] as $key) {
+            Setting::put($key, $data[$key] ?: null);
+        }
+
+        // Blank means "keep what is stored"; bullets mean the field was never
+        // touched. Neither should wipe a working password.
+        if (filled($this->mail_password) && ! str_starts_with($this->mail_password, '•')) {
+            Setting::put('mail_password', $this->mail_password, secret: true);
+            $this->mail_password = '••••••••••••';
+        }
+
+        Setting::put('notification_recipients', implode(', ', MailSettings::parse($data['notification_recipients'])) ?: null);
+
+        MailSettings::apply();
+
+        $this->dispatch('toast', message: 'Mail settings saved.', tone: 'ok');
+    }
+
+    /**
+     * Sends synchronously and reports the actual SMTP error. A queued test that
+     * fails an hour later into a log nobody reads is not a test.
+     */
+    public function sendTestMail(): void
+    {
+        $this->validate(
+            ['test_mail_to' => ['required', 'email']],
+            attributes: ['test_mail_to' => 'address'],
+        );
+
+        MailSettings::apply();
+
+        try {
+            Mail::to($this->test_mail_to)->send(new TestMail(auth()->user()->name));
+        } catch (\Throwable $e) {
+            $this->dispatch('toast', message: 'Could not send: '.Str::limit($e->getMessage(), 160), tone: 'danger');
+
+            return;
+        }
+
+        $this->dispatch('toast', message: "Test sent to {$this->test_mail_to}. Check the inbox and the spam folder.", tone: 'ok');
     }
 
     public function saveCompany(): void
@@ -218,6 +325,7 @@ class Index extends Component
             'assetTypes' => AssetType::options(),
             'scopes' => RecipientScope::options(),
             'allChannels' => ReminderChannel::options(),
+            'extraRecipients' => MailSettings::extraRecipients(),
             'failedJobs' => DB::table('failed_jobs')->count(),
             'queueDepth' => DB::table('jobs')->count(),
             'backups' => $this->backups(),

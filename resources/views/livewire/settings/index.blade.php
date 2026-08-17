@@ -1,7 +1,7 @@
-<div class="px-4 lg:px-6 py-4 flex flex-col gap-4 max-w-3xl">
+<div class="px-4 lg:px-6 py-4 flex flex-col gap-4">
 
     <div class="flex gap-1 overflow-x-auto no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0" role="tablist">
-        @foreach (['company' => 'Company', 'reminders' => 'Reminder rules', 'channels' => 'Channels', 'system' => 'System'] as $key => $label)
+        @foreach (['company' => 'Company', 'mail' => 'Mail', 'reminders' => 'Reminder rules', 'channels' => 'Channels', 'system' => 'System'] as $key => $label)
             <button
                 type="button"
                 role="tab"
@@ -106,6 +106,127 @@
                 </div>
             </form>
         </x-ui.card>
+
+    @elseif ($tab === 'mail')
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
+            <x-ui.card title="SMTP server" subtitle="Overrides the .env values, so credentials can be changed without SSH.">
+                <form wire:submit="saveMail" class="flex flex-col gap-4 mt-3" id="mail-form">
+                    <x-ui.field
+                        label="Server"
+                        for="mail-host"
+                        placeholder="smtp.hostinger.com"
+                        hint="Leave blank to keep using whatever .env is set to."
+                        wire:model="mail_host"
+                        :error="$errors->first('mail_host')"
+                    />
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <x-ui.field
+                            label="Port"
+                            for="mail-port"
+                            type="number"
+                            placeholder="587"
+                            wire:model="mail_port"
+                            :error="$errors->first('mail_port')"
+                        />
+                        <x-ui.field
+                            label="Encryption"
+                            for="mail-encryption"
+                            type="select"
+                            :options="['tls' => 'STARTTLS (587)', 'ssl' => 'SSL/TLS (465)', 'none' => 'None']"
+                            wire:model="mail_encryption"
+                            :error="$errors->first('mail_encryption')"
+                        />
+                    </div>
+
+                    <x-ui.field
+                        label="Username"
+                        for="mail-username"
+                        autocomplete="off"
+                        wire:model="mail_username"
+                        :error="$errors->first('mail_username')"
+                    />
+
+                    <x-ui.field
+                        label="Password"
+                        for="mail-password"
+                        type="password"
+                        autocomplete="new-password"
+                        hint="Stored encrypted. Leave the dots alone to keep the current password."
+                        wire:model="mail_password"
+                    />
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <x-ui.field
+                            label="From address"
+                            for="mail-from"
+                            type="email"
+                            placeholder="alerts@yourdomain.com"
+                            wire:model="mail_from_address"
+                            :error="$errors->first('mail_from_address')"
+                        />
+                        <x-ui.field
+                            label="From name"
+                            for="mail-from-name"
+                            wire:model="mail_from_name"
+                            :error="$errors->first('mail_from_name')"
+                        />
+                    </div>
+
+                    <div><x-ui.button variant="primary" type="submit" target="saveMail">Save mail settings</x-ui.button></div>
+                </form>
+            </x-ui.card>
+
+            <div class="flex flex-col gap-4">
+                <x-ui.card title="Send a test" subtitle="Sends immediately and reports the real error, rather than failing quietly into the queue.">
+                    <div class="flex flex-col gap-4 mt-3">
+                        <x-ui.field
+                            label="Send to"
+                            for="mail-test-to"
+                            type="email"
+                            required
+                            wire:model="test_mail_to"
+                            :error="$errors->first('test_mail_to')"
+                        />
+
+                        <div class="flex items-center gap-3">
+                            <x-ui.button variant="secondary" icon="send" wire:click="sendTestMail" target="sendTestMail">
+                                Send a test email
+                            </x-ui.button>
+                            <span wire:loading wire:target="sendTestMail" class="t-meta text-ink-600">Connecting…</span>
+                        </div>
+                    </div>
+                </x-ui.card>
+
+                <x-ui.card
+                    title="Always copy these people"
+                    subtitle="On top of whoever each reminder rule resolves to."
+                >
+                    <form wire:submit="saveMail" class="flex flex-col gap-4 mt-3">
+                        <x-ui.field
+                            label="Recipients"
+                            for="mail-recipients"
+                            type="textarea"
+                            rows="3"
+                            placeholder="owner@agency.com, accounts@agency.com"
+                            hint="One per line, or separated by commas. Every reminder and digest goes to these as well."
+                            wire:model="notification_recipients"
+                            :error="$errors->first('notification_recipients')"
+                        />
+
+                        @if ($extraRecipients)
+                            <div class="flex flex-wrap gap-1.5">
+                                @foreach ($extraRecipients as $email)
+                                    <x-ui.badge tone="accent" size="sm">{{ $email }}</x-ui.badge>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <div><x-ui.button variant="primary" type="submit" target="saveMail">Save recipients</x-ui.button></div>
+                    </form>
+                </x-ui.card>
+            </div>
+        </div>
 
     @elseif ($tab === 'reminders')
         <x-ui.card title="Reminder rules" subtitle="A rule fires once per asset, per channel, per recipient. Duplicates are impossible by design." :padding="false" :flush="true">

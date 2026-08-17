@@ -5,7 +5,7 @@
         </div>
     @endpush
 
-    <div class="px-4 lg:px-6 py-4 lg:py-6 flex flex-col gap-4 max-w-3xl">
+    <div class="px-4 lg:px-6 py-4 lg:py-6 flex flex-col gap-4">
 
         {{-- Typography ------------------------------------------------------ --}}
         <x-ui.card title="Type scale" subtitle="DM Sans at 400, 500 and 700 only.">

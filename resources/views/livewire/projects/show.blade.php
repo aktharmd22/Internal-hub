@@ -3,7 +3,7 @@
     $percent = $total > 0 ? (int) round($done / $total * 100) : 0;
 @endphp
 
-<div class="px-4 lg:px-6 py-4 flex flex-col gap-4 max-w-3xl">
+<div class="px-4 lg:px-6 py-4 flex flex-col gap-4">
     <x-ui.card>
         <div class="flex flex-wrap items-center gap-2">
             <x-ui.badge :tone="$project->status->tone()" dot>{{ $project->status->label() }}</x-ui.badge>

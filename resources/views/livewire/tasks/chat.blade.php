@@ -58,24 +58,42 @@
 
     {{-- Files ------------------------------------------------------------ --}}
     @if ($showFiles)
-        <div class="px-4 py-3 border-b border-ink-100 bg-surface shrink-0 max-h-52 overflow-y-auto">
+        <div class="px-4 py-3 border-b border-ink-100 bg-surface shrink-0 max-h-64 overflow-y-auto">
             @forelse ($files as $file)
-                <a
-                    wire:key="file-{{ $file->id }}"
-                    href="{{ $file->getUrl() }}"
-                    target="_blank"
-                    rel="noopener"
-                    class="flex items-center gap-2.5 py-2 px-2 -mx-2 rounded-control hover:bg-surface-2"
-                >
-                    <x-icon
-                        :name="str_starts_with((string) $file->mime_type, 'image/') ? 'image' : 'file-text'"
-                        class="size-4 text-ink-400 shrink-0"
-                    />
+                @php
+                    $name = $file->getCustomProperty('original_name', $file->file_name);
+                    $isImage = str_starts_with((string) $file->mime_type, 'image/');
+                    $preview = $isImage && $file->hasGeneratedConversion('thumb') ? $file->getUrl('thumb') : $file->getUrl();
+                @endphp
+
+                <div wire:key="file-{{ $file->id }}" class="flex items-center gap-2.5 py-2 px-2 -mx-2 rounded-control hover:bg-surface-2">
+                    @if ($isImage)
+                        <button
+                            type="button"
+                            x-on:click="$dispatch('open-lightbox', { url: @js($file->getUrl()), name: @js($name) })"
+                            class="shrink-0"
+                        >
+                            <img src="{{ $preview }}" alt="{{ $name }}" loading="lazy" class="size-9 rounded-control object-cover bg-surface-2">
+                        </button>
+                    @else
+                        <span class="shrink-0 grid place-items-center size-9 rounded-control bg-surface-2 text-ink-400">
+                            <x-icon name="file-text" class="size-4" />
+                        </span>
+                    @endif
+
                     <span class="min-w-0 flex-1">
-                        <span class="block t-sub text-ink-950 truncate">{{ $file->getCustomProperty('original_name', $file->file_name) }}</span>
+                        <span class="block t-sub text-ink-950 truncate">{{ $name }}</span>
                         <span class="block t-meta text-ink-400 tnum">{{ number_format($file->size / 1024, 0) }} KB</span>
                     </span>
-                </a>
+
+                    <a
+                        href="{{ $file->getUrl() }}"
+                        download="{{ $name }}"
+                        class="shrink-0 tap grid place-items-center rounded-control text-ink-400 hover:text-ink-800 hover:bg-ink-100 transition-colors"
+                    >
+                        <x-icon name="download" class="size-4" label="Download {{ $name }}" />
+                    </a>
+                </div>
             @empty
                 <p class="t-sub text-ink-600 py-2">No files on this task yet.</p>
             @endforelse
@@ -211,23 +229,71 @@
                                 @if ($message->getMedia('attachments')->isNotEmpty())
                                     <div class="flex flex-col gap-1.5 mt-2">
                                         @foreach ($message->getMedia('attachments') as $media)
-                                            <a
-                                                wire:key="media-{{ $media->id }}"
-                                                href="{{ $media->getUrl() }}"
-                                                target="_blank"
-                                                rel="noopener"
-                                                @class([
-                                                    'flex items-center gap-2 rounded-control px-2 py-1.5',
-                                                    'bg-white/15 hover:bg-white/25' => $mine,
-                                                    'bg-surface-2 hover:bg-ink-100' => ! $mine,
-                                                ])
-                                            >
-                                                <x-icon
-                                                    :name="str_starts_with((string) $media->mime_type, 'image/') ? 'image' : 'file-text'"
-                                                    class="size-3.5 shrink-0"
-                                                />
-                                                <span class="t-meta truncate">{{ $media->getCustomProperty('original_name', $media->file_name) }}</span>
-                                            </a>
+                                            @php
+                                                $name = $media->getCustomProperty('original_name', $media->file_name);
+                                                $isImage = str_starts_with((string) $media->mime_type, 'image/');
+                                                // The conversion is generated on upload, but fall back to the
+                                                // original so an attachment never renders as a broken image.
+                                                $preview = $isImage && $media->hasGeneratedConversion('thumb')
+                                                    ? $media->getUrl('thumb')
+                                                    : $media->getUrl();
+                                            @endphp
+
+                                            @if ($isImage)
+                                                {{-- Show the picture, not its filename. --}}
+                                                <div wire:key="media-{{ $media->id }}" class="group/img relative overflow-hidden rounded-control">
+                                                    <button
+                                                        type="button"
+                                                        x-on:click="$dispatch('open-lightbox', { url: @js($media->getUrl()), name: @js($name) })"
+                                                        class="block w-full"
+                                                    >
+                                                        <img
+                                                            src="{{ $preview }}"
+                                                            alt="{{ $name }}"
+                                                            loading="lazy"
+                                                            class="w-full max-w-64 max-h-64 object-cover bg-surface-2"
+                                                        >
+                                                    </button>
+
+                                                    <div class="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover/img:opacity-100 focus-within:opacity-100 transition-opacity">
+                                                        <a
+                                                            href="{{ $media->getUrl() }}"
+                                                            download="{{ $name }}"
+                                                            class="grid place-items-center size-8 rounded-control bg-ink-950/70 text-white hover:bg-ink-950/85 transition-colors"
+                                                        >
+                                                            <x-icon name="download" class="size-4" label="Download {{ $name }}" />
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div
+                                                    wire:key="media-{{ $media->id }}"
+                                                    @class([
+                                                        'flex items-center gap-2 rounded-control px-2 py-1.5',
+                                                        'bg-white/15' => $mine,
+                                                        'bg-surface-2' => ! $mine,
+                                                    ])
+                                                >
+                                                    <x-icon name="file-text" class="size-4 shrink-0 opacity-70" />
+
+                                                    <span class="min-w-0 flex-1">
+                                                        <span class="block t-meta truncate">{{ $name }}</span>
+                                                        <span class="block t-meta opacity-60 tnum">{{ number_format($media->size / 1024) }} KB</span>
+                                                    </span>
+
+                                                    <a
+                                                        href="{{ $media->getUrl() }}"
+                                                        download="{{ $name }}"
+                                                        @class([
+                                                            'shrink-0 grid place-items-center size-7 rounded-control transition-colors',
+                                                            'hover:bg-white/20' => $mine,
+                                                            'hover:bg-ink-100' => ! $mine,
+                                                        ])
+                                                    >
+                                                        <x-icon name="download" class="size-3.5" label="Download {{ $name }}" />
+                                                    </a>
+                                                </div>
+                                            @endif
                                         @endforeach
                                     </div>
                                 @endif
