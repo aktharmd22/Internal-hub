@@ -191,8 +191,33 @@ If your plan only offers a 5-minute minimum, that is fine. The reminder command 
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-php artisan storage:link
 php artisan cloudflare:ips     # refresh the trusted proxy ranges
+```
+
+### storage:link does not work here
+
+Hostinger disables `symlink()` **and** `exec()` in PHP, so the command fails with
+`Call to undefined function Illuminate\Filesystem\exec`. Laravel falls back to
+`exec()` when `symlink()` is missing, and both are gone.
+
+The shell can still do it. Run this once instead:
+
+```bash
+ln -s ~/domains/internal.gnext.space/app/storage/app/public \
+      ~/domains/internal.gnext.space/app/public/storage
+
+ls -la ~/domains/internal.gnext.space/app/public/storage
+```
+
+Skip it and chat attachments and voice notes upload successfully, then 404 for
+everyone who tries to open them.
+
+The same restriction is why nothing in `routes/console.php` uses
+`runInBackground()`, and why backups are scheduled only when `proc_open` exists —
+`mysqldump` cannot be reached without it. Check what your host allows with:
+
+```bash
+php -r "echo ini_get('disable_functions'), PHP_EOL;"
 ```
 
 Then check:
