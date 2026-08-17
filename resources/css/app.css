@@ -227,6 +227,41 @@
         padding-top: env(safe-area-inset-top, 0px);
     }
 
+    /* Sign-in backdrop: a soft accent wash behind the card and a fine dot
+       grid across the rest. Both are drawn from theme tokens, so the whole
+       thing inverts correctly in dark mode with no second set of assets.
+
+       The radial-gradients here draw a texture, not a gradient surface — the
+       page still reads flat, which is the rule everywhere else in the app. */
+    .auth-backdrop {
+        background-color: var(--color-canvas);
+        background-image:
+            radial-gradient(ellipse 70% 45% at 50% 0%, var(--color-accent-50) 0%, transparent 70%),
+            radial-gradient(var(--color-ink-200) 1px, transparent 1px);
+        background-size:
+            100% 560px,
+            22px 22px;
+        background-repeat: no-repeat, repeat;
+        background-position:
+            center top,
+            0 0;
+        background-attachment: fixed, fixed;
+    }
+
+    /* The dots would otherwise run under the card and fight the form. */
+    .auth-card-halo {
+        position: relative;
+    }
+
+    .auth-card-halo::before {
+        content: '';
+        position: absolute;
+        inset: -28px;
+        border-radius: 28px;
+        background: radial-gradient(closest-side, var(--color-canvas) 60%, transparent 100%);
+        z-index: -1;
+    }
+
     /* Avatar colours are derived from the user id in PHP and handed over as
        custom properties, because an inline style cannot react to `.dark`. */
     .avatar-tint {

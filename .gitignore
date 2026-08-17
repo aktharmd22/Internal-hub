@@ -25,8 +25,8 @@ Thumbs.db
 # /public/build is deliberately NOT ignored. Hostinger shared hosting has no
 # Node runtime, so compiled assets are built locally and shipped with the code.
 
-# The company logo is uploaded per install, not committed.
-/public/logo.*
+# Logos uploaded through Settings are per-install; the committed drop-in file
+# at public/Logo.png ships with the code so a fresh clone is complete.
 /public/brand/
 
 # Refreshed Cloudflare proxy ranges are per-install runtime state.
