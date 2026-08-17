@@ -13,6 +13,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -33,6 +34,8 @@ class Index extends Component
 
     public string $role = 'employee';
 
+    public string $password = '';
+
     public function mount(): void
     {
         abort_unless(auth()->user()->can(Permissions::MANAGE_USERS), 403);
@@ -41,7 +44,7 @@ class Index extends Component
     #[On('team:new-user')]
     public function newUser(): void
     {
-        $this->reset(['editingId', 'name', 'email', 'phone']);
+        $this->reset(['editingId', 'name', 'email', 'phone', 'password']);
         $this->role = 'employee';
         $this->resetValidation();
         $this->dispatch('open-modal', 'user-form');
@@ -57,28 +60,51 @@ class Index extends Component
         $this->phone = (string) $user->phone;
         $this->role = $user->role()?->value ?? 'employee';
 
+        // Never populated from the stored hash. Blank means "leave it alone".
+        $this->password = '';
+
         $this->dispatch('open-modal', 'user-form');
+    }
+
+    /**
+     * Fills the field with something strong. The admin reveals it, copies it
+     * and hands it over — which is the only way in while mail is unconfigured
+     * and the reset link goes nowhere.
+     */
+    public function generatePassword(): void
+    {
+        $this->password = Str::password(16, symbols: false);
+
+        $this->resetValidation('password');
     }
 
     public function save(): void
     {
         $data = $this->validate();
 
+        $setsPassword = filled($data['password']);
+
         if ($this->editingId) {
             $user = User::findOrFail($this->editingId);
+
             $user->update([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'phone' => $data['phone'] ?: null,
             ]);
+
+            // Blank leaves the existing password untouched.
+            if ($setsPassword) {
+                $user->forceFill(['password' => Hash::make($data['password'])])->save();
+            }
         } else {
-            // A temporary password, sent nowhere: the new user resets it from
-            // the login screen. Nothing here ever mails a password.
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'phone' => $data['phone'] ?: null,
-                'password' => Hash::make(Str::password(16)),
+                // Left blank, the account gets an unguessable password nobody
+                // holds, and the person uses the reset link instead.
+                'password' => Hash::make($setsPassword ? $data['password'] : Str::password(32)),
                 'email_verified_at' => now(),
                 'timezone' => config('app.timezone'),
             ]);
@@ -86,9 +112,16 @@ class Index extends Component
 
         $user->syncRoles([$data['role']]);
 
+        $message = match (true) {
+            $this->editingId && $setsPassword => 'Account updated and password changed.',
+            (bool) $this->editingId => 'Account updated.',
+            $setsPassword => "Account created. Give {$user->firstName()} the password you set.",
+            default => 'Account created. They sign in with "Forgot password" on the login screen.',
+        };
+
         $this->dispatch('close-modal', 'user-form');
-        $this->dispatch('toast', message: $this->editingId ? 'Account updated.' : 'Account created. They can set a password with "Forgot password".', tone: 'ok');
-        $this->reset(['editingId', 'name', 'email', 'phone']);
+        $this->dispatch('toast', message: $message, tone: 'ok');
+        $this->reset(['editingId', 'name', 'email', 'phone', 'password']);
     }
 
     public function toggleActive(int $id): void
@@ -114,6 +147,9 @@ class Index extends Component
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->editingId)],
             'phone' => ['nullable', 'string', 'max:32'],
             'role' => ['required', Rule::in(Role::values())],
+            // Optional in both modes: blank means "generate one nobody holds"
+            // when creating, and "leave it alone" when editing.
+            'password' => ['nullable', 'string', Password::defaults()],
         ];
     }
 

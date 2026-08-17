@@ -84,11 +84,29 @@
                 @endforeach
             </div>
 
-            @unless ($editingId)
-                <p class="t-meta text-ink-600 rounded-control bg-surface-2 px-3.5 py-2.5">
-                    No password is set or emailed. They use "Forgot password" on the sign-in screen to choose their own.
-                </p>
-            @endunless
+            <div class="flex flex-col gap-2 rounded-control border border-ink-100 px-3.5 py-3">
+                <x-ui.field
+                    :label="$editingId ? 'Set a new password' : 'Password'"
+                    for="user-password"
+                    type="password"
+                    autocomplete="new-password"
+                    :hint="$editingId
+                        ? 'Leave blank to keep their current password.'
+                        : 'Leave blank and they use \'Forgot password\' instead — which needs mail configured.'"
+                    wire:model="password"
+                    :error="$errors->first('password')"
+                />
+
+                <div class="flex items-center gap-2">
+                    <x-ui.button size="sm" variant="secondary" icon="refresh-cw" wire:click="generatePassword" target="generatePassword">
+                        Generate
+                    </x-ui.button>
+
+                    <span class="t-meta text-ink-600">
+                        At least 10 characters, with letters and numbers. Use the eye to reveal and copy it.
+                    </span>
+                </div>
+            </div>
         </form>
 
         <x-slot:footer>
