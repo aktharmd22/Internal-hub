@@ -48,6 +48,7 @@ class Show extends Component
 
     /* ------------------------------------------------------------- status */
 
+    #[On('task:request-status')]
     public function requestStatus(string $status): void
     {
         $target = TaskStatus::from($status);
@@ -161,6 +162,7 @@ class Show extends Component
 
     /* ------------------------------------------------------------- timer */
 
+    #[On('task:toggle-timer')]
     public function toggleTimer(): void
     {
         $this->authorize('trackTime', $this->task);
@@ -213,6 +215,7 @@ class Show extends Component
         $this->dispatch('toast', message: 'Watcher added.', tone: 'ok');
     }
 
+    #[On('task:toggle-mute')]
     public function toggleMute(): void
     {
         $pivot = $this->task->participants()->where('user_id', auth()->id())->first()?->pivot;

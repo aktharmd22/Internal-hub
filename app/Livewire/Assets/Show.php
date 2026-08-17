@@ -31,6 +31,7 @@ class Show extends Component
         $this->asset->refresh();
     }
 
+    #[On('asset:renew')]
     public function renew(): void
     {
         $this->authorize('update', $this->asset);
@@ -55,6 +56,7 @@ class Show extends Component
         $this->dispatch('toast', message: 'Renewed to '.$this->asset->expires_at->format('j M Y').'.', tone: 'ok');
     }
 
+    #[On('asset:verify')]
     public function verify(AssetVerifier $verifier): void
     {
         $this->authorize('update', $this->asset);
@@ -77,6 +79,7 @@ class Show extends Component
         );
     }
 
+    #[On('asset:toggle-reminders')]
     public function toggleReminders(): void
     {
         $this->authorize('update', $this->asset);
@@ -90,6 +93,7 @@ class Show extends Component
         );
     }
 
+    #[On('asset:archive')]
     public function archive(): void
     {
         $this->authorize('delete', $this->asset);

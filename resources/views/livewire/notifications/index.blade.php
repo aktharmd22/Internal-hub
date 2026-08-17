@@ -11,7 +11,9 @@
 
 <div>
     @push('page-actions')
-        <x-ui.button variant="ghost" size="sm" wire:click="markAllRead">Mark all read</x-ui.button>
+        <x-ui.button variant="ghost" size="sm" x-on:click="Livewire.dispatch('notifications:mark-all-read')">
+            Mark all read
+        </x-ui.button>
     @endpush
 
     <div class="px-4 lg:px-6 py-4 flex flex-col gap-4">

@@ -15,6 +15,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -52,6 +53,16 @@ class Index extends Component
     {
         $this->filter = $filter;
         $this->resetPage();
+    }
+
+    /**
+     * The list/board switch lives in the topbar, which renders outside this
+     * component's root, so wire:click cannot bind to it.
+     */
+    #[On('tasks:set-view')]
+    public function setView(string $view): void
+    {
+        $this->view = in_array($view, ['list', 'board'], true) ? $view : 'list';
     }
 
     public function clearFilters(): void

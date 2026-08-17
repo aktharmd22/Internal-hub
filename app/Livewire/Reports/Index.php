@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -33,6 +34,7 @@ class Index extends Component
      * Streamed rather than built in memory: a year of renewals on a shared
      * host with a modest memory limit should never be an array first.
      */
+    #[On('reports:export')]
     public function exportRenewals(): StreamedResponse
     {
         abort_unless(auth()->user()->can(Permissions::VIEW_REPORTS), 403);

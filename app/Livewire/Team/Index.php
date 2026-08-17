@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -37,6 +38,7 @@ class Index extends Component
         abort_unless(auth()->user()->can(Permissions::MANAGE_USERS), 403);
     }
 
+    #[On('team:new-user')]
     public function newUser(): void
     {
         $this->reset(['editingId', 'name', 'email', 'phone']);

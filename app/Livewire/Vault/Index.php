@@ -10,6 +10,7 @@ use App\Models\Credential;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -71,6 +72,7 @@ class Index extends Component
         $this->reset(['revealedId', 'revealed']);
     }
 
+    #[On('vault:new-credential')]
     public function newCredential(): void
     {
         $this->authorize('create', Credential::class);

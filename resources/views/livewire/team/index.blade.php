@@ -1,6 +1,8 @@
 <div>
+    {{-- Pushed into the topbar, which lives outside this component's root, so
+         wire:click would never bind. Livewire.dispatch crosses that boundary. --}}
     @push('page-actions')
-        <x-ui.button variant="primary" size="sm" icon="plus" wire:click="newUser">
+        <x-ui.button variant="primary" size="sm" icon="plus" x-on:click="Livewire.dispatch('team:new-user')">
             <span class="max-sm:sr-only">Add person</span>
         </x-ui.button>
     @endpush

@@ -7,7 +7,7 @@
 
 <div>
     @push('page-actions')
-        <x-ui.button variant="secondary" size="sm" icon="upload" wire:click="exportRenewals">
+        <x-ui.button variant="secondary" size="sm" icon="download" x-on:click="Livewire.dispatch('reports:export')">
             <span class="max-sm:sr-only">Export CSV</span>
         </x-ui.button>
     @endpush

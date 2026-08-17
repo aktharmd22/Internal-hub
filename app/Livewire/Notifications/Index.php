@@ -7,6 +7,7 @@ namespace App\Livewire\Notifications;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -18,6 +19,7 @@ class Index extends Component
     #[Url(except: '')]
     public string $type = '';
 
+    #[On('notifications:mark-all-read')]
     public function markAllRead(): void
     {
         auth()->user()->unreadNotifications->markAsRead();
