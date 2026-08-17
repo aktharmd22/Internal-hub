@@ -32,9 +32,9 @@ new #[Layout('components.layouts.guest', ['title' => 'Reset password'])] class e
 }; ?>
 
 <div>
-    <x-ui.card>
-        <h1 class="t-page-title text-ink-950">Reset password</h1>
-        <p class="t-sub text-ink-600 mt-1">
+    <x-ui.card class="max-sm:border-0 max-sm:bg-transparent">
+        <h1 class="t-page-title text-ink-950 text-center">Reset password</h1>
+        <p class="t-sub text-ink-600 mt-1.5 text-center">
             Enter the email on your account and we will send a link to set a new password.
         </p>
 

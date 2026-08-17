@@ -38,7 +38,7 @@
     @endpush
 
     {{-- Details column ------------------------------------------------- --}}
-    <div class="lg:w-[380px] lg:shrink-0 lg:border-r lg:border-ink-100 lg:overflow-y-auto">
+    <div class="lg:w-[380px] lg:shrink-0 lg:overflow-y-auto bg-surface">
         <div class="px-4 lg:px-5 py-4 flex flex-col gap-4">
 
             <div>
@@ -154,7 +154,7 @@
                             <a wire:key="sub-{{ $subtask->id }}" href="{{ route('tasks.show', $subtask) }}" wire:navigate
                                class="flex items-center gap-2.5 px-3.5 py-2.5 hover:bg-surface-2">
                                 <x-icon
-                                    :name="$subtask->status->isClosed() ? 'circle-check' : 'clock'"
+                                    :name="$subtask->status->isClosed() ? 'circle-check' : 'circle-dashed'"
                                     class="size-4 shrink-0 {{ $subtask->status->isClosed() ? 'text-ok-600' : 'text-ink-400' }}"
                                 />
                                 <span class="t-sub text-ink-950 truncate flex-1">{{ $subtask->title }}</span>
@@ -191,8 +191,10 @@
         </div>
     </div>
 
-    {{-- Chat column ---------------------------------------------------- --}}
-    <div class="flex-1 min-w-0 lg:h-full">
+    {{-- Chat column ----------------------------------------------------
+         Its own surface, with a border between it and the details, so the
+         conversation reads as a separate place rather than as more form. --}}
+    <div class="flex-1 min-w-0 lg:h-full lg:border-l lg:border-ink-100 max-lg:border-t max-lg:border-ink-100">
         <livewire:tasks.chat :task="$task" :key="'chat-'.$task->id" />
     </div>
 

@@ -22,9 +22,10 @@ new #[Layout('components.layouts.guest', ['title' => 'Sign in'])] class extends 
 }; ?>
 
 <div>
-    <x-ui.card>
-        <h1 class="t-page-title text-ink-950">Sign in</h1>
-        <p class="t-sub text-ink-600 mt-1">Renewals, assets and client work for the team.</p>
+    {{-- On a phone the card's chrome earns nothing: the form is the whole
+         screen. It becomes a real card from sm: up. --}}
+    <x-ui.card class="max-sm:border-0 max-sm:bg-transparent max-sm:[&>div]:px-0">
+        <h1 class="t-page-title text-ink-950 text-center">Sign in</h1>
 
         @if (session('status'))
             <p class="mt-4 t-sub text-ok-600 flex items-start gap-1.5">
@@ -33,7 +34,7 @@ new #[Layout('components.layouts.guest', ['title' => 'Sign in'])] class extends 
             </p>
         @endif
 
-        <form wire:submit="login" class="mt-6 flex flex-col gap-4">
+        <form wire:submit="login" class="mt-5 flex flex-col gap-4">
             <x-ui.field
                 label="Email"
                 for="email"

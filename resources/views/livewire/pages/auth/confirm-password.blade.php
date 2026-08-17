@@ -31,9 +31,9 @@ new #[Layout('components.layouts.guest', ['title' => 'Confirm password'])] class
 }; ?>
 
 <div>
-    <x-ui.card>
-        <h1 class="t-page-title text-ink-950">Confirm password</h1>
-        <p class="t-sub text-ink-600 mt-1">
+    <x-ui.card class="max-sm:border-0 max-sm:bg-transparent">
+        <h1 class="t-page-title text-ink-950 text-center">Confirm password</h1>
+        <p class="t-sub text-ink-600 mt-1.5 text-center">
             This area holds client credentials. Enter your password to continue.
         </p>
 

@@ -8,11 +8,18 @@
     x-bind:class="$store.sidebar.collapsed ? 'lg:w-[68px]' : 'lg:w-[248px]'"
     class="hidden lg:flex lg:flex-col sticky top-0 h-dvh shrink-0 border-r border-ink-100 bg-surface transition-[width] duration-200 lg:w-[248px]"
 >
-    <div class="flex items-center h-16 px-4 shrink-0">
-        <x-app.brand x-show="! $store.sidebar.collapsed" x-cloak />
+    <div class="flex items-center h-16 px-4 shrink-0 border-b border-ink-100">
+        <x-app.brand cap="max-w-[184px]" x-show="! $store.sidebar.collapsed" x-cloak />
 
-        {{-- Collapsed to 68px: the mark alone, no name beside it. --}}
-        <x-app.brand :show-name="false" x-show="$store.sidebar.collapsed" x-cloak />
+        {{-- Collapsed to 68px. A wide lockup is capped to the rail rather than
+             overflowing it; the height follows. --}}
+        <x-app.brand
+            size="sm"
+            :show-name="false"
+            cap="max-w-9"
+            x-show="$store.sidebar.collapsed"
+            x-cloak
+        />
     </div>
 
     <nav class="flex-1 overflow-y-auto no-scrollbar px-2.5 pb-4" aria-label="Sidebar">

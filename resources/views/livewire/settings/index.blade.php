@@ -16,7 +16,18 @@
     @if ($tab === 'company')
         <x-ui.card title="Logo" subtitle="Shown in the sidebar, on the sign-in screen and at the top of every email.">
             <div class="flex flex-col sm:flex-row sm:items-start gap-4 mt-3">
-                <div class="shrink-0 grid place-items-center size-20 rounded-card border border-ink-100 bg-surface-2 p-2">
+                {{-- A checkered plate, so transparency reads as transparency
+                     rather than as a white block. --}}
+                <div
+                    class="shrink-0 grid place-items-center h-20 w-40 rounded-card border border-ink-100 p-3"
+                    style="background-image:
+                        linear-gradient(45deg, var(--color-ink-100) 25%, transparent 25%),
+                        linear-gradient(-45deg, var(--color-ink-100) 25%, transparent 25%),
+                        linear-gradient(45deg, transparent 75%, var(--color-ink-100) 75%),
+                        linear-gradient(-45deg, transparent 75%, var(--color-ink-100) 75%);
+                        background-size: 12px 12px;
+                        background-position: 0 0, 0 6px, 6px -6px, -6px 0;"
+                >
                     @if (\App\Support\Brand::has())
                         <img src="{{ \App\Support\Brand::url() }}" alt="{{ \App\Support\Brand::name() }}" class="max-h-full max-w-full object-contain">
                     @else

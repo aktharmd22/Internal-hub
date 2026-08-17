@@ -61,6 +61,32 @@
             </select>
             <x-icon name="chevron-down" class="size-4 text-ink-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
+    @elseif ($type === 'password')
+        {{-- Every password field gets a reveal. Typing a long password blind
+             on a phone keyboard is how people end up choosing a short one. --}}
+        <div class="relative" x-data="{ show: false }">
+            <input
+                id="{{ $id }}"
+                type="password"
+                x-bind:type="show ? 'text' : 'password'"
+                placeholder="{{ $placeholder }}"
+                @if ($describedBy) aria-describedby="{{ $describedBy }}" @endif
+                @if ($error) aria-invalid="true" @endif
+                {{ $attributes->except(['class'])->class("{$control} {$height} pr-11") }}
+            >
+
+            <button
+                type="button"
+                x-on:click="show = ! show"
+                x-bind:aria-label="show ? 'Hide password' : 'Show password'"
+                x-bind:aria-pressed="show"
+                tabindex="-1"
+                class="absolute right-0 inset-y-0 w-11 grid place-items-center rounded-r-control text-ink-400 hover:text-ink-800 transition-colors"
+            >
+                <x-icon name="eye" class="size-[18px]" x-show="! show" />
+                <x-icon name="eye-off" class="size-[18px]" x-show="show" x-cloak />
+            </button>
+        </div>
     @else
         <input
             id="{{ $id }}"
