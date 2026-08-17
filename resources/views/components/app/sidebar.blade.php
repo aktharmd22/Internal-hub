@@ -8,15 +8,11 @@
     x-bind:class="$store.sidebar.collapsed ? 'lg:w-[68px]' : 'lg:w-[248px]'"
     class="hidden lg:flex lg:flex-col sticky top-0 h-dvh shrink-0 border-r border-ink-100 bg-surface transition-[width] duration-200 lg:w-[248px]"
 >
-    <div class="flex items-center gap-2.5 h-16 px-4 shrink-0">
-        <span class="grid place-items-center size-8 rounded-control bg-accent-600 text-on-solid shrink-0">
-            <x-icon name="shield-check" class="size-[18px]" />
-        </span>
+    <div class="flex items-center h-16 px-4 shrink-0">
+        <x-app.brand x-show="! $store.sidebar.collapsed" x-cloak />
 
-        <span x-show="! $store.sidebar.collapsed" x-cloak class="min-w-0">
-            <span class="block t-sub font-medium text-ink-950 truncate">{{ config('app.name') }}</span>
-            <span class="block t-meta text-ink-400 truncate">Renewals &amp; tasks</span>
-        </span>
+        {{-- Collapsed to 68px: the mark alone, no name beside it. --}}
+        <x-app.brand :show-name="false" x-show="$store.sidebar.collapsed" x-cloak />
     </div>
 
     <nav class="flex-1 overflow-y-auto no-scrollbar px-2.5 pb-4" aria-label="Sidebar">

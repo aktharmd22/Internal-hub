@@ -10,6 +10,7 @@ use App\Enums\ReminderChannel;
 use App\Models\ReminderRule;
 use App\Models\Setting;
 use App\Services\Healthcheck;
+use App\Support\Brand;
 use App\Support\Channels;
 use App\Support\Permissions;
 use Illuminate\Support\Carbon;
@@ -20,11 +21,14 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 #[Layout('components.layouts.app')]
 #[Title('Settings')]
 class Index extends Component
 {
+    use WithFileUploads;
+
     #[Url(except: 'company')]
     public string $tab = 'company';
 
@@ -37,6 +41,8 @@ class Index extends Component
     public string $whatsapp_phone_number_id = '';
 
     public string $whatsapp_token = '';
+
+    public $logo;
 
     // Reminder rule editor
     public ?int $ruleId = null;
@@ -73,6 +79,32 @@ class Index extends Component
         Setting::put('healthcheck_url', $this->healthcheck_url);
 
         $this->dispatch('toast', message: 'Settings saved.', tone: 'ok');
+    }
+
+    public function uploadLogo(): void
+    {
+        $this->validate([
+            'logo' => ['required', 'image', 'mimes:svg,png,jpg,jpeg,webp', 'max:2048'],
+        ], attributes: ['logo' => 'logo']);
+
+        Brand::store($this->logo);
+
+        $this->reset('logo');
+
+        $this->dispatch(
+            'toast',
+            message: Brand::isRaster()
+                ? 'Logo saved. Run `php artisan brand:icons` to rebuild the app icons from it.'
+                : 'Logo saved.',
+            tone: 'ok',
+        );
+    }
+
+    public function removeLogo(): void
+    {
+        Brand::clear();
+
+        $this->dispatch('toast', message: 'Logo removed. The default mark is back.', tone: 'ok');
     }
 
     public function saveChannels(): void

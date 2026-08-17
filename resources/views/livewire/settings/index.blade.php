@@ -14,6 +14,57 @@
     </div>
 
     @if ($tab === 'company')
+        <x-ui.card title="Logo" subtitle="Shown in the sidebar, on the sign-in screen and at the top of every email.">
+            <div class="flex flex-col sm:flex-row sm:items-start gap-4 mt-3">
+                <div class="shrink-0 grid place-items-center size-20 rounded-card border border-ink-100 bg-surface-2 p-2">
+                    @if (\App\Support\Brand::has())
+                        <img src="{{ \App\Support\Brand::url() }}" alt="{{ \App\Support\Brand::name() }}" class="max-h-full max-w-full object-contain">
+                    @else
+                        <span class="grid place-items-center size-11 rounded-control bg-accent-600 text-on-solid">
+                            <x-icon name="shield-check" class="size-6" />
+                        </span>
+                    @endif
+                </div>
+
+                <div class="min-w-0 flex-1 flex flex-col gap-2.5">
+                    <label for="logo-file" class="t-sub font-medium text-ink-800">Upload a logo</label>
+
+                    <input
+                        id="logo-file"
+                        type="file"
+                        wire:model="logo"
+                        accept=".svg,.png,.jpg,.jpeg,.webp"
+                        class="w-full t-sub text-ink-600 file:mr-3 file:rounded-control file:border file:border-ink-200 file:bg-surface file:px-3 file:py-2 file:t-sub file:text-ink-800"
+                    >
+
+                    <p class="t-meta text-ink-600">
+                        SVG, PNG, JPG or WebP, up to 2 MB. Square works best — it is never cropped.
+                        A PNG of 512&times;512 or larger can also rebuild the app icons.
+                    </p>
+
+                    @error('logo')
+                        <p class="t-meta text-danger-600 flex items-center gap-1">
+                            <x-icon name="circle-alert" class="size-3.5" />{{ $message }}
+                        </p>
+                    @enderror
+
+                    <div wire:loading wire:target="logo" class="t-meta text-ink-600">Reading the file…</div>
+
+                    <div class="flex flex-wrap gap-2 mt-1">
+                        <x-ui.button variant="primary" wire:click="uploadLogo" target="uploadLogo" :disabled="! $logo">
+                            Save logo
+                        </x-ui.button>
+
+                        @if (\App\Support\Brand::has())
+                            <x-ui.button variant="ghost" wire:click="removeLogo" wire:confirm="Remove the logo and go back to the default mark?">
+                                Remove
+                            </x-ui.button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </x-ui.card>
+
         <x-ui.card title="Company profile">
             <form wire:submit="saveCompany" class="flex flex-col gap-4 mt-3">
                 <x-ui.field label="Company name" for="s-company" required wire:model="company_name" :error="$errors->first('company_name')" />

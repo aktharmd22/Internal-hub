@@ -19,8 +19,16 @@
         <tr>
             <td align="center">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #edecef;border-radius:12px;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#16151a;">
+                    @if ($logo = \App\Support\Brand::mailUrl())
+                        <tr>
+                            <td style="padding:24px 24px 0;">
+                                <img src="{{ $logo }}" alt="{{ \App\Support\Brand::name() }}" style="height:28px;max-width:180px;display:block;margin-bottom:4px;">
+                            </td>
+                        </tr>
+                    @endif
+
                     <tr>
-                        <td style="padding:24px 24px 0;">
+                        <td style="padding:{{ $logo ? '12px' : '24px' }} 24px 0;">
                             <span style="display:inline-block;padding:4px 10px;border-radius:999px;background:{{ $chipBg }};color:{{ $accent }};font-size:12px;font-weight:500;">
                                 @if ($isEscalation && $daysRemaining >= 0)
                                     Escalated · {{ $daysRemaining }} {{ \Illuminate\Support\Str::plural('day', $daysRemaining) }} left

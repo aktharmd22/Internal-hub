@@ -11,8 +11,17 @@
         <tr>
             <td align="center">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #edecef;border-radius:12px;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#16151a;">
+                    @if ($logo = \App\Support\Brand::mailUrl())
+                        <tr>
+                            <td style="padding:24px 24px 0;">
+                                {{-- Height only: a wide logo must not be squashed into a square. --}}
+                                <img src="{{ $logo }}" alt="{{ \App\Support\Brand::name() }}" style="height:28px;max-width:180px;display:block;">
+                            </td>
+                        </tr>
+                    @endif
+
                     <tr>
-                        <td style="padding:24px 24px 0;">
+                        <td style="padding:{{ isset($logo) && $logo ? '16px' : '24px' }} 24px 0;">
                             <h1 style="margin:0;font-size:20px;line-height:1.3;letter-spacing:-0.01em;font-weight:700;">{{ $title }}</h1>
                             @if ($subtitle)
                                 <p style="margin:6px 0 0;font-size:14px;color:#5c5966;">{{ $subtitle }}</p>

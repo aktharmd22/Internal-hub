@@ -24,3 +24,7 @@ Thumbs.db
 
 # /public/build is deliberately NOT ignored. Hostinger shared hosting has no
 # Node runtime, so compiled assets are built locally and shipped with the code.
+
+# The company logo is uploaded per install, not committed.
+/public/logo.*
+/public/brand/
