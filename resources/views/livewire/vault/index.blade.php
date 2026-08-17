@@ -1,7 +1,7 @@
 <div x-data="clipboardVault()">
     @push('page-actions')
         @can('create', App\Models\Credential::class)
-            <x-ui.button variant="primary" size="sm" icon="plus" x-on:click="Livewire.dispatch('vault:new-credential')">
+            <x-ui.button variant="primary" size="sm" icon="plus" onclick="Livewire.dispatch('vault:new-credential')">
                 <span class="max-sm:sr-only">Add credential</span>
             </x-ui.button>
         @endcan

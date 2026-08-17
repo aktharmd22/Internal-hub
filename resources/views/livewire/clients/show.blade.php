@@ -1,7 +1,7 @@
 <div>
     @can('update', $client)
         @push('page-actions')
-            <x-ui.button variant="secondary" size="sm" icon="pencil" x-on:click="Livewire.dispatch('edit-client', { id: {{ $client->id }} })">
+            <x-ui.button variant="secondary" size="sm" icon="pencil" onclick="Livewire.dispatch('edit-client', { id: {{ $client->id }} })">
                 <span class="max-sm:sr-only">Edit</span>
             </x-ui.button>
         @endpush

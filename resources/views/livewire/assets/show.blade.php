@@ -3,7 +3,7 @@
          wire:click cannot bind. Livewire.dispatch crosses that boundary. --}}
     @push('page-actions')
         @can('update', $asset)
-            <x-ui.button variant="primary" size="sm" icon="refresh-cw" x-on:click="Livewire.dispatch('asset:renew')">
+            <x-ui.button variant="primary" size="sm" icon="refresh-cw" onclick="Livewire.dispatch('asset:renew')">
                 <span class="max-sm:sr-only">Renew</span>
             </x-ui.button>
 
@@ -13,21 +13,21 @@
                         <x-icon name="ellipsis-vertical" class="size-5" label="More actions" />
                     </button>
                 </x-slot:trigger>
-                <x-ui.dropdown-item icon="pencil" x-on:click="Livewire.dispatch('edit-asset', { id: {{ $asset->id }} })">
+                <x-ui.dropdown-item icon="pencil" onclick="Livewire.dispatch('edit-asset', { id: {{ $asset->id }} })">
                     Edit details
                 </x-ui.dropdown-item>
                 @if ($asset->type->isVerifiable())
-                    <x-ui.dropdown-item icon="shield-check" x-on:click="Livewire.dispatch('asset:verify')">
+                    <x-ui.dropdown-item icon="shield-check" onclick="Livewire.dispatch('asset:verify')">
                         Check with the registry
                     </x-ui.dropdown-item>
                 @endif
-                <x-ui.dropdown-item icon="bell" x-on:click="Livewire.dispatch('asset:toggle-reminders')">
+                <x-ui.dropdown-item icon="bell" onclick="Livewire.dispatch('asset:toggle-reminders')">
                     {{ $asset->reminders_enabled ? 'Stop reminders' : 'Start reminders' }}
                 </x-ui.dropdown-item>
                 <x-ui.dropdown-item
                     icon="trash-2"
                     tone="danger"
-                    x-on:click="if (confirm('Archive this asset? Reminders stop immediately.')) Livewire.dispatch('asset:archive')"
+                    onclick="if (confirm('Archive this asset? Reminders stop immediately.')) Livewire.dispatch('asset:archive')"
                 >
                     Archive
                 </x-ui.dropdown-item>

@@ -11,7 +11,7 @@
 
 <div>
     @push('page-actions')
-        <x-ui.button variant="ghost" size="sm" x-on:click="Livewire.dispatch('notifications:mark-all-read')">
+        <x-ui.button variant="ghost" size="sm" onclick="Livewire.dispatch('notifications:mark-all-read')">
             Mark all read
         </x-ui.button>
     @endpush

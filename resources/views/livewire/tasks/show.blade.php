@@ -12,7 +12,7 @@
                         </x-ui.button>
                     </x-slot:trigger>
                     @foreach ($nextStatuses as $status)
-                        <x-ui.dropdown-item x-on:click="Livewire.dispatch('task:request-status', { status: '{{ $status->value }}' })">
+                        <x-ui.dropdown-item onclick="Livewire.dispatch('task:request-status', { status: '{{ $status->value }}' })">
                             Move to {{ $status->label() }}
                         </x-ui.dropdown-item>
                     @endforeach
@@ -25,16 +25,16 @@
                         <x-icon name="ellipsis-vertical" class="size-5" label="More actions" />
                     </button>
                 </x-slot:trigger>
-                <x-ui.dropdown-item icon="pencil" x-on:click="Livewire.dispatch('edit-task', { id: {{ $task->id }} })">
+                <x-ui.dropdown-item icon="pencil" onclick="Livewire.dispatch('edit-task', { id: {{ $task->id }} })">
                     Edit task
                 </x-ui.dropdown-item>
-                <x-ui.dropdown-item icon="plus" x-on:click="Livewire.dispatch('create-subtask', { parentId: {{ $task->id }} })">
+                <x-ui.dropdown-item icon="plus" onclick="Livewire.dispatch('create-subtask', { parentId: {{ $task->id }} })">
                     Add a subtask
                 </x-ui.dropdown-item>
-                <x-ui.dropdown-item icon="clock" x-on:click="Livewire.dispatch('task:toggle-timer')">
+                <x-ui.dropdown-item icon="clock" onclick="Livewire.dispatch('task:toggle-timer')">
                     {{ $timerRunning ? 'Stop the timer' : 'Start the timer' }}
                 </x-ui.dropdown-item>
-                <x-ui.dropdown-item icon="bell" x-on:click="Livewire.dispatch('task:toggle-mute')">
+                <x-ui.dropdown-item icon="bell" onclick="Livewire.dispatch('task:toggle-mute')">
                     {{ $muted ? 'Unmute this thread' : 'Mute this thread' }}
                 </x-ui.dropdown-item>
             </x-ui.dropdown>

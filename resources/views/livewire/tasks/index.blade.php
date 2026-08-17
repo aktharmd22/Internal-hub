@@ -15,7 +15,7 @@
             @foreach (['list' => 'list-checks', 'board' => 'folder-kanban'] as $value => $icon)
                 <button
                     type="button"
-                    x-on:click="Livewire.dispatch('tasks:set-view', { view: '{{ $value }}' })"
+                    onclick="Livewire.dispatch('tasks:set-view', { view: '{{ $value }}' })"
                     aria-pressed="{{ $view === $value ? 'true' : 'false' }}"
                     class="grid place-items-center size-8 rounded-[7px] transition-colors
                         {{ $view === $value ? 'bg-surface text-ink-950 shadow-float' : 'text-ink-400' }}"
