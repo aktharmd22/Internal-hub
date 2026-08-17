@@ -28,3 +28,6 @@ Thumbs.db
 # The company logo is uploaded per install, not committed.
 /public/logo.*
 /public/brand/
+
+# Refreshed Cloudflare proxy ranges are per-install runtime state.
+/storage/app/cloudflare-ips.json
